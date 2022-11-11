@@ -1,6 +1,6 @@
 {
-  "name": "cm-chessboard",
-  "version": "5.2.8",
+  "name": "cm-chessboard-ts",
+  "version": "5.2.10",
   "description": "A JavaScript chessboard which is lightweight, ES6 module based, responsive, SVG rendered and without dependencies.",
   "keywords": [
     "chess",
@@ -14,6 +14,7 @@
   ],
   "type": "module",
   "module": "./src/cm-chessboard/Chessboard.js",
+  "types": "./src/cm-chessboard/Chessboard.d.ts",
   "browser": "./src/cm-chessboard/Chessboard.js",
   "scripts": {
     "test": "tput setaf 4;echo 'Run test/index.html in your browser for unit testing.'; echo ''; exit 0"
@@ -29,6 +30,7 @@
   },
   "homepage": "https://github.com/shaack/cm-chessboard#readme",
   "devDependencies": {
-    "teevi": "^2.2.2"
+    "teevi": "^2.2.2",
+    "typescript": "^4.8.4"
   }
 }
