@@ -118,8 +118,6 @@ export const PIECE = {
   bq: "bq",
   bk: "bk",
 };
-import { FEN as FENjs } from "./model/Position";
-export const FEN: { start: string; empty: string } = FENjs;
 
 interface Config {
   position?: string; // set as fen, can use FEN.start or FEN.empty
@@ -144,6 +142,9 @@ interface Config {
 }
 
 export interface ChessBoardInstance {
+  state: {
+    moveInputProcess: Promise<any>;
+  };
   setPiece(
     square: Square,
     piece: PieceInputType,
@@ -166,7 +167,7 @@ export interface ChessBoardInstance {
   setOrientation(color: Color);
   getOrientation(): Color;
   destroy(): void;
-  enableMoveInput(eventHandler: (event: any) => boolean | void, color?: Color);
+  enableMoveInput(eventHandler: (event: any) => any, color?: Color);
   disableMoveInput(): void;
   enableSquareSelect(eventHandler: (event: any) => any);
   disableSquareSelect(): void;
