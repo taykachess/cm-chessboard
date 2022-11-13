@@ -163,7 +163,7 @@ export interface ChessBoardInstance {
     type: undefined | string,
     square: undefined | Square
   ): { square: Square; type: string }[];
-  removeMarkers(type: undefined | string, square: undefined | Square);
+  removeMarkers(type: undefined | string, square?: undefined | Square);
   setOrientation(color: Color);
   getOrientation(): Color;
   destroy(): void;
