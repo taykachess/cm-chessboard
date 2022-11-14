@@ -126,7 +126,7 @@ interface Config {
   animationDuration?: number; // pieces animation duration in milliseconds. Disable all animation with `0`.
   language?: "el" | "de"; // supports "de" and "en" for now, used for pieces naming
   style?: {
-    cssClass?: "default" | "green" | "blue" | "chess-club"; // set the css theme of the board, try "green", "blue" or "chess-club"
+    cssClass?: "default" | "green" | "blue" | "chess-club" | "black-and-white"; // set the css theme of the board, try "green", "blue" or "chess-club"
     showCoordinates?: boolean; // show ranks and files
     borderType?: "none" | "thin" | "frame"; // "thin" thin border, "frame" wide border with coordinates in it, "none" no border
     aspectRatio?: number; // height/width of the board
