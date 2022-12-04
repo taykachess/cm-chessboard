@@ -28,18 +28,20 @@ It works, it is cool and it is easy to use. 👍</p>
     </ul>
     <h3>Examples of extensions</h3>
     <ul>
-        <li><a href="examples/extensions/chessboard-accessibility-extension.html">Accessibility extension</a> 🆕</li>
-        <li><a href="examples/extensions/chessboard-arrows-extension.html">Arrows extension</a> 🆕</li>
+        <li><a href="examples/extensions/chessboard-accessibility-extension.html">Accessibility extension</a></li>
+        <li><a href="examples/extensions/chessboard-arrows-extension.html">Arrows extension</a></li>
+        <li><a href="examples/extensions/chessboard-promotion-dialog-extension.html">PromotionDialog extension</a> 🆕</li>
     </ul>
 </div>
 <h2>Chessboard</h2>
 <div class="board" id="board"></div>
 <script type="module">
     import {Chessboard} from "./src/cm-chessboard/Chessboard.js"
+    import {FEN} from "./src/cm-chessboard/model/Position.js"
 
     const chess = new Chess()
     const board = new Chessboard(document.getElementById("board"), {
-        position: "start"
+        position: FEN.start
     })
     const interval = setInterval(() => {
         makeRandomMove()

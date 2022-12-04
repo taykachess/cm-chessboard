@@ -38,7 +38,7 @@ export class ChessboardState {
         const position = this._position.clone()
         position.animated = animated
         const piece = position.getPiece(fromSquare)
-        if(!piece) {
+        if (!piece) {
             console.error("no piece on", fromSquare)
         }
         position.setPiece(fromSquare, undefined)
@@ -80,15 +80,17 @@ export class ChessboardState {
 
     invokeExtensionPoints(name, data = {}) {
         const extensionPoints = this.extensionPoints[name]
-        const dataCloned = Object.assign({}, data);
+        const dataCloned = Object.assign({}, data)
         dataCloned.extensionPoint = name
-        if(extensionPoints) {
+        let returnValue = true
+        if (extensionPoints) {
             for (const extensionPoint of extensionPoints) {
-                setTimeout(() => {
-                    extensionPoint(dataCloned)
-                })
+                if(extensionPoint(dataCloned) === false) {
+                    returnValue = false
+                }
             }
         }
+        return returnValue
     }
 
 }

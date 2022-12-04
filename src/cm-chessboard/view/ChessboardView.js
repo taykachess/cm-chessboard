@@ -5,7 +5,7 @@
  */
 
 import {VisualMoveInput} from "./VisualMoveInput.js"
-import {COLOR, INPUT_EVENT_TYPE, BORDER_TYPE} from "../Chessboard.js"
+import {BORDER_TYPE, COLOR, INPUT_EVENT_TYPE} from "../Chessboard.js"
 import {Position} from "../model/Position.js"
 import {EXTENSION_POINT} from "../model/Extension.js"
 
@@ -140,6 +140,8 @@ export class ChessboardView {
         this.markersGroup = Svg.addElement(this.markersLayer, "g", {class: "markers"})
         this.piecesLayer = Svg.addElement(this.svg, "g", {class: "pieces-layer"})
         this.piecesGroup = Svg.addElement(this.piecesLayer, "g", {class: "pieces"})
+        this.markersTopLayer = Svg.addElement(this.svg, "g", {class: "markers-top-layer"})
+        // this.markersTopGroup = Svg.addElement(this.markersTopLayer, "g", {class: "markers-top"})
     }
 
     updateMetrics() {
@@ -278,7 +280,7 @@ export class ChessboardView {
         for (let i = 0; i < 64; i++) {
             const pieceName = squares[i]
             if (pieceName) {
-                this.drawPiece(Position.indexToSquare(i), pieceName)
+                this.drawPieceOnSquare(Position.indexToSquare(i), pieceName)
             }
         }
         for (const childNode of childNodes) {
@@ -286,8 +288,35 @@ export class ChessboardView {
         }
     }
 
-    drawPiece(square, pieceName) {
-        const pieceGroup = Svg.addElement(this.piecesGroup, "g")
+    drawPiece(parentGroup, pieceName, point) {
+        const pieceGroup = Svg.addElement(parentGroup, "g", {})
+        pieceGroup.setAttribute("data-piece", pieceName)
+        pieceGroup.setAttribute("class", "piece-group")
+        const transform = (this.svg.createSVGTransform())
+        transform.setTranslate(point.x, point.y)
+        pieceGroup.transform.baseVal.appendItem(transform)
+        const spriteUrl = this.chessboard.props.sprite.cache ? "" : this.chessboard.props.sprite.url
+        const pieceUse = Svg.addElement(pieceGroup, "use", {
+            href: `${spriteUrl}#${pieceName}`,
+            class: "piece"
+        })
+        const transformScale = (this.svg.createSVGTransform())
+        transformScale.setScale(this.scalingY, this.scalingY)
+        pieceUse.transform.baseVal.appendItem(transformScale)
+        const transformTranslate = (this.svg.createSVGTransform())
+        transformTranslate.setTranslate(this.pieceXTranslate, 0)
+        pieceUse.transform.baseVal.appendItem(transformTranslate)
+        return pieceGroup
+    }
+
+    drawPieceOnSquare(square, pieceName) {
+        const point = this.squareToPoint(square)
+        const pieceGroup = this.drawPiece(this.piecesGroup, pieceName, point)
+        pieceGroup.setAttribute("data-square", square)
+        return pieceGroup
+
+        /*
+        const pieceGroup = Svg.addElement(this.piecesGroup, "g", {})
         pieceGroup.setAttribute("data-piece", pieceName)
         pieceGroup.setAttribute("data-square", square)
         const point = this.squareToPoint(square)
@@ -303,11 +332,10 @@ export class ChessboardView {
         const transformTranslate = (this.svg.createSVGTransform())
         transformTranslate.setTranslate(this.pieceXTranslate, 0)
         pieceUse.transform.baseVal.appendItem(transformTranslate)
-        // scale
-        const transformScale = (this.svg.createSVGTransform())
-        transformScale.setScale(this.scalingY, this.scalingY)
-        pieceUse.transform.baseVal.appendItem(transformScale)
-        return pieceGroup
+
+         */
+
+        // return pieceGroup
     }
 
     setPieceVisibility(square, visible = true) {
@@ -395,14 +423,17 @@ export class ChessboardView {
         const data = {
             chessboard: this.chessboard,
             type: INPUT_EVENT_TYPE.moveInputStarted,
-            square: square
+            square: square,
+            piece: this.chessboard.getPiece(square)
         }
-        this.chessboard.state.invokeExtensionPoints(EXTENSION_POINT.moveInput, data) // TODO use the return value of this EP
         if (this.moveInputCallback) {
-            return this.moveInputCallback(data)
-        } else {
-            return true
+            // the "oldschool" move input validator
+            data.moveInputCallbackResult =  this.moveInputCallback(data)
         }
+        // the new extension points
+        const extensionPointsResult = this.chessboard.state.invokeExtensionPoints(EXTENSION_POINT.moveInput, data)
+        // validates, when moveInputCallbackResult and extensionPointsResult are true
+        return !(extensionPointsResult === false || !data.moveInputCallbackResult);
     }
 
     validateMoveInputCallback(squareFrom, squareTo) {
@@ -410,14 +441,17 @@ export class ChessboardView {
             chessboard: this.chessboard,
             type: INPUT_EVENT_TYPE.validateMoveInput,
             squareFrom: squareFrom,
-            squareTo: squareTo
+            squareTo: squareTo,
+            piece: this.chessboard.getPiece(squareFrom)
         }
-        this.chessboard.state.invokeExtensionPoints(EXTENSION_POINT.moveInput, data) // TODO use the return value of this EP
         if (this.moveInputCallback) {
-            return this.moveInputCallback(data)
-        } else {
-            return true
+            // the "oldschool" move input validator
+            data.moveInputCallbackResult = this.moveInputCallback(data)
         }
+        // the new extension points
+        const extensionPointsResult = this.chessboard.state.invokeExtensionPoints(EXTENSION_POINT.moveInput, data)
+        // validates, when moveInputCallbackResult and extensionPointsResult are true
+        return !(extensionPointsResult === false || !data.moveInputCallbackResult);
     }
 
     moveInputCanceledCallback(reason, squareFrom, squareTo) {
@@ -527,4 +561,24 @@ export class Svg {
         }
     }
 
+}
+
+export class DomUtils {
+    static delegate(element, eventName, selector, handler) {
+        const eventListener = function (event) {
+            let target = event.target
+            while (target && target !== this) {
+                if (target.matches(selector)) {
+                    handler.call(target, event)
+                }
+                target = target.parentNode
+            }
+        }
+        element.addEventListener(eventName, eventListener)
+        return {
+            remove: function () {
+                element.removeEventListener(eventName, eventListener)
+            }
+        }
+    }
 }
